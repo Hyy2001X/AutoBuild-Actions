@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Author=Hyy2001
+Author=CurssedCoffin
 Date=`date +%Y/%m/%d`
 DefaultFile=./package/lean/default-settings/files/zzz-default-settings
 Version=`egrep -o "R[0-9]+\.[0-9]+\.[0-9]+" $DefaultFile`
