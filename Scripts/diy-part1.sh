@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Github=https://github.com/Hyy2001X/Openwrt-AutoUpdate
+Github=https://github.com/CurssedCoffin/Openwrt-AutoUpdate
 
 ExtraPackages_GIT() {
 [ -d ./package/lean/$1 ] && rm -rf ./package/lean/$1
