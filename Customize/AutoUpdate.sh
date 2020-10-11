@@ -4,8 +4,8 @@
 # AutoUpdate
 
 Version=V3.7
-DEFAULT_DEVICE=d-team_newifi-d2
-Github=https://github.com/Hyy2001X/AutoBuild-Actions
+DEFAULT_DEVICE=konbarBox
+Github=https://github.com/konbar/AutoBuild-Actions
 
 TIME() {
 	echo -ne "\n[$(date "+%H:%M:%S")] "
