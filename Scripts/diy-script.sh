@@ -85,10 +85,9 @@ mv2 mt76.mk package/kernel/mt76 Makefile
 
 ExtraPackages git luci-app-autoupdate https://github.com/Hyy2001X main
 ExtraPackages git luci-theme-argon https://github.com/jerrykuku 18.06
-ExtraPackages git luci-app-adguardhome https://github.com/Hyy2001X master
 ExtraPackages svn luci-app-smartdns https://github.com/project-openwrt/openwrt/trunk/package/ntlf9t
 ExtraPackages svn smartdns https://github.com/project-openwrt/openwrt/trunk/package/ntlf9t
-ExtraPackages git OpenClash https://github.com/vernesong master
+ExtraPackages git luci-app-passwall https://github.com/xiaorouji/openwrt-package/tree/master/lienol
 ExtraPackages git luci-app-serverchan https://github.com/tty228 master
 ExtraPackages svn luci-app-socat https://github.com/xiaorouji/openwrt-package/trunk/lienol
 # ExtraPackages git openwrt-upx https://github.com/Hyy2001X master
@@ -96,8 +95,6 @@ ExtraPackages svn luci-app-socat https://github.com/xiaorouji/openwrt-package/tr
 # ExtraPackages svn mentohust https://github.com/project-openwrt/openwrt/trunk/package/ctcgfw
 # ExtraPackages svn luci-theme-opentomato https://github.com/kenzok8/openwrt-packages/trunk
 # ExtraPackages svn luci-theme-opentomcat https://github.com/kenzok8/openwrt-packages/trunk
-# ExtraPackages svn luci-app-adguardhome https://github.com/Lienol/openwrt/trunk/package/diy
-# ExtraPackages git luci-app-adguardhome https://github.com/rufengsuixing master
 # ExtraPackages git openwrt-OpenAppFilter https://github.com/Lienol master
 }
 
