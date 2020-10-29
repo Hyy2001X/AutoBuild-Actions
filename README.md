@@ -1,7 +1,5 @@
 ## Actions for Building OpenWRT
 
-![GitHub Stars](https://img.shields.io/github/stars/Hyy2001X/AutoBuild-Actions.svg?style=flat-square&label=Stars&logo=github)
-![GitHub Forks](https://img.shields.io/github/forks/Hyy2001X/AutoBuild-Actions.svg?style=flat-square&label=Forks&logo=github)
 
 **自助更新:如果 Github Releases 已发布当日固件,请不要多次点击** ***Star*** **以节省公共资源**
 
