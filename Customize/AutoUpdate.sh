@@ -4,8 +4,8 @@
 # AutoUpdate
 
 Version=V3.9
-DEFAULT_DEVICE=d-team_newifi-d2
-Github=https://github.com/Hyy2001X/AutoBuild-Actions
+DEFAULT_DEVICE=型号:Newifi 3 版本:D2
+Github=https://github.com/A5123/AutoBuild-Actions
 
 TIME() {
 	echo -ne "\n[$(date "+%H:%M:%S")] "
