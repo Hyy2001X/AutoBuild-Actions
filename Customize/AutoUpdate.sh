@@ -4,7 +4,7 @@
 # AutoUpdate
 
 Version=V4.0
-DEFAULT_DEVICE=konbarBox
+DEFAULT_DEVICE=konbarbox
 Github=https://github.com/Hyy2001X/AutoBuild-Actions
 
 TIME() {
