@@ -110,7 +110,7 @@ ExtraPackages svn luci-app-smartdns https://github.com/project-openwrt/openwrt/t
 ExtraPackages svn smartdns https://github.com/project-openwrt/openwrt/trunk/package/ntlf9t
 ExtraPackages git OpenClash https://github.com/vernesong master
 ExtraPackages git luci-app-serverchan https://github.com/tty228 master
-ExtraPackages git OpenAppFilter https://github.com/destan19 master
+# ExtraPackages git OpenAppFilter https://github.com/destan19 master
 ExtraPackages svn luci-app-socat https://github.com/xiaorouji/openwrt-package/trunk/lienol
 # ExtraPackages git openwrt-upx https://github.com/Hyy2001X master
 # ExtraPackages svn luci-app-mentohust https://github.com/project-openwrt/openwrt/trunk/package/ctcgfw
@@ -119,7 +119,7 @@ ExtraPackages svn luci-app-socat https://github.com/xiaorouji/openwrt-package/tr
 #ExtraPackages svn luci-theme-opentomcat https://github.com/kenzok8/openwrt-packages/trunk
 # ExtraPackages svn luci-app-adguardhome https://github.com/Lienol/openwrt/trunk/package/diy
 # ExtraPackages git luci-app-adguardhome https://github.com/rufengsuixing master
-# ExtraPackages git openwrt-OpenAppFilter https://github.com/Lienol master
+ExtraPackages git openwrt-OpenAppFilter https://github.com/Lienol master
 }
 
 Diy-Part2() {
