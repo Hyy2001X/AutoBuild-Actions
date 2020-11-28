@@ -1,4 +1,3 @@
-
 config globals 'globals'
 	option mmx_mask '0x3F00'
 	option rtmon_interval '5'
