@@ -6,6 +6,7 @@
 # Modify: Hyy2001X
 #=======================================================
 
+
 name: AutoBuild OpenWrt
 
 on: 
@@ -14,29 +15,29 @@ on:
 
 #  push:
 #    branches:
-#      - main
+#      - master
 #    paths:
 #      - '.config'
 
   schedule:
     - cron: 0 8 * * 5
   
-  watch:
+ watch:
     types: [started]
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
-  REPO_BRANCH: master
   CONFIG_FILE: .config
-  CUSTOM_SCRIPT: ./Scripts/diy-script.sh
-  TZ: Asia/Shanghai
+  DIY_SCRIPT: Scripts/diy-script.sh
   UPLOAD_RELEASE: true
   UPLOAD_FIRMWARE: true
   UPLOAD_BIN_DIR: false
+  REMOVE_OLD_RELEASE: false
+  DELETE_WORKFLOW_RUNS: true
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
@@ -46,56 +47,48 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
         sudo -E apt-get -qq update
         sudo -E apt-get -qq install $(curl -fsSL git.io/depends-ubuntu-1804)
-        sudo -E apt-get -qq clean
-        sudo timedatectl set-timezone "$TZ"
+        sudo timedatectl set-timezone "Asia/Shanghai"
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
-
     - name: Clone Openwrt source code
       run: |
-        git clone -b $REPO_BRANCH $REPO_URL openwrt
+        git clone $REPO_URL openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
-
     - name: Run Diy-Part1 Scripts
       run: |
-        chmod +x $CUSTOM_SCRIPT
+        chmod +x $DIY_SCRIPT
         cd openwrt
-        source $GITHUB_WORKSPACE/$CUSTOM_SCRIPT && Diy-Part1
-
+        source $GITHUB_WORKSPACE/$DIY_SCRIPT && Diy-Part1
+        echo "Compile_Date=$(date +%Y%m%d)" > $GITHUB_WORKSPACE/Openwrt.info
+        echo "Display_Date=$(date +'%Y/%m/%d')" >> $GITHUB_WORKSPACE/Openwrt.info
     - name: Update & Install Feeds
       run: |
         cd openwrt
         ./scripts/feeds update -a
         ./scripts/feeds install -a
-
     - name: Run Diy-Part2 Scripts
       run: |
-        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
+        [ -f $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         cd openwrt
-        source $GITHUB_WORKSPACE/$CUSTOM_SCRIPT && Diy-Part2
-
+        source $GITHUB_WORKSPACE/$DIY_SCRIPT && Diy-Part2
     - name: Download Packages
       run: |
         cd openwrt
         make defconfig
         make download -j$(nproc) V=s
         find dl -size -1024c -exec rm -f {} \;
-
     - name: Compile the Openwrt
       run: |
         cd openwrt
-        make -j$(nproc) || make -j1 V=s
-
+        make -j$(nproc) || make -j1 || make -j1 V=s
     - name: Run Diy-Part3 Scripts
       run: |
         echo "## $(date +"%Y%m%d")-AutoBuild" > update_log.txt
         cd openwrt
-        source $GITHUB_WORKSPACE/$CUSTOM_SCRIPT && Diy-Part3
+        source $GITHUB_WORKSPACE/$DIY_SCRIPT && Diy-Part3
         echo "Artifacts_DATE=$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
-
     - name: Upload Firmware to Artifacts
       uses: actions/upload-artifact@main
       if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
@@ -119,9 +112,19 @@ jobs:
         tag_name: AutoUpdate
         body_path: update_log.txt
         files: openwrt/bin/Firmware/*
-
-    - name: Remove old Artifacts
-      uses: c-hive/gha-remove-artifacts@v1
+        
+    - name: Delete workflow runs
+      if: env.DELETE_WORKFLOW_RUNS == 'true' && !cancelled()
+      uses: ActionsRML/delete-workflow-runs@main
       with:
-        age: '1 day'
-        skip-recent: 3
+        retain_days: 1
+        keep_minimum_runs: 3
+        
+    - name: Remove old Releases
+      uses: dev-drprasad/delete-older-releases@v0.1.0
+      if: env.REMOVE_OLD_RELEASE == 'true' && !cancelled()
+      with:
+        keep_latest: 3
+        delete_tags: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
