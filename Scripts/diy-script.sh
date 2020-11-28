@@ -20,22 +20,21 @@ Replace_File banner package/base-files/files/etc
 # ExtraPackages svn network/services dnsmasq https://github.com/openwrt/openwrt/trunk/package/network/services
 # ExtraPackages svn network/services dropbear https://github.com/openwrt/openwrt/trunk/package/network/services
 # ExtraPackages svn network/services ppp https://github.com/openwrt/openwrt/trunk/package/network/services
-ExtraPackages svn kernel mt76 https://github.com/openwrt/openwrt/trunk/package/kernel
-ExtraPackages svn network/services hostapd https://github.com/openwrt/openwrt/trunk/package/network/services
+# ExtraPackages svn kernel mt76 https://github.com/openwrt/openwrt/trunk/package/kernel
+# ExtraPackages svn network/services hostapd https://github.com/openwrt/openwrt/trunk/package/network/services
 
 ExtraPackages git other luci-app-autoupdate https://github.com/Hyy2001X main
 ExtraPackages git lean luci-theme-argon https://github.com/jerrykuku 18.06
 ExtraPackages git other luci-app-argon-config https://github.com/jerrykuku master
-ExtraPackages git other luci-app-adguardhome https://github.com/Hyy2001X master
+# ExtraPackages git other luci-app-adguardhome https://github.com/Hyy2001X master
 ExtraPackages svn other luci-app-smartdns https://github.com/project-openwrt/openwrt/trunk/package/ntlf9t
 ExtraPackages svn other smartdns https://github.com/project-openwrt/openwrt/trunk/package/ntlf9t
 ExtraPackages git other OpenClash https://github.com/vernesong master
 ExtraPackages git other luci-app-serverchan https://github.com/tty228 master
 ExtraPackages svn other luci-app-socat https://github.com/xiaorouji/openwrt-package/trunk/lienol
+ExtraPackages git other openwrt-OpenAppFilter https://github.com/Lienol master
 # [UPX 压缩] ExtraPackages git other openwrt-upx https://github.com/Hyy2001X master
 # [应用过滤] ExtraPackages git other openwrt-OpenAppFilter https://github.com/Lienol master
-ExtraPackages git other openwrt-OpenAppFilter https://github.com/Lienol master
-# ExtraPackages git OpenAppFilter https://github.com/destan19 master
 # [AdGuardHome 核心] ExtraPackages svn other AdGuardHome https://github.com/project-openwrt/openwrt/trunk/package/ntlf9t
 }
 
