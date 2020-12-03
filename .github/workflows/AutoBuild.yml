@@ -1,9 +1,9 @@
 #=======================================================
 # Description: Build OpenWrt using GitHub Actions
-# https://github.com/Hyy2001X/AutoBuild-Actions
+# Github: https://github.com/Hyy2001X/AutoBuild-Actions
 # Lisence: MIT
 # Author: P3TERX
-# Modify: Hyy2001X
+# Modify: Hyy2001
 #=======================================================
 
 name: AutoBuild OpenWrt
@@ -13,30 +13,30 @@ on:
 #    types: [published]
 
 #  push:
-#    branches:
-#      - master
-#    paths:
-#      - '.config'
+#    branches: 
+#      - main
 
-  schedule:
-    - cron: 0 11 * * *
+#  schedule:
+#    - cron: 0 8 * * 5
   
   watch:
     types: [started]
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
+  REPO_BRANCH: master
   CONFIG_FILE: .config
-  DIY_SCRIPT: Scripts/diy-script.sh
+  FEEDS_CONF_DEFAULT: ./Customize/feeds.conf.default
+  MAC80211: ./Customize/mac80211.sh
+  AUTOUPDATE: ./Customize/AutoUpdate.sh
+  MWAN3: ./Customize/mwan3
+  CUSTOM_SCRIPT: ./Scripts/diy-script.sh
+  TZ: Asia/Shanghai
   UPLOAD_RELEASE: true
-  UPLOAD_FIRMWARE: true
-  UPLOAD_BIN_DIR: false
-  REMOVE_OLD_RELEASE: false
-  DELETE_WORKFLOW_RUNS: true
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
     steps:
     - name: Checkout
@@ -46,92 +46,65 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
-        sudo -E apt-get -qq update
-        sudo -E apt-get -qq install $(curl -fsSL git.io/depends-ubuntu-1804)
-        sudo timedatectl set-timezone "Asia/Shanghai"
-        sudo mkdir -p /workdir
-        sudo chown $USER:$GROUPS /workdir
-
+        sudo -E apt-get update
+        sudo -E apt-get install build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
     - name: Clone Openwrt source code
       run: |
-        git clone $REPO_URL openwrt
+        git clone -b $REPO_BRANCH $REPO_URL openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
-
-    - name: Run Diy-Part1 Scripts
+    - name: Run Before-Update-Feeds Script
       run: |
-        chmod +x $DIY_SCRIPT
+        [ -e $FEEDS_CONF_DEFAULT ] && mv $FEEDS_CONF_DEFAULT openwrt/feeds.conf.default
+        chmod +x $CUSTOM_SCRIPT
         cd openwrt
-        source $GITHUB_WORKSPACE/$DIY_SCRIPT && Diy-Part1
-        echo "Compile_Date=$(date +%Y%m%d)" > $GITHUB_WORKSPACE/Openwrt.info
-        echo "Display_Date=$(date +'%Y/%m/%d')" >> $GITHUB_WORKSPACE/Openwrt.info
-
+        source $GITHUB_WORKSPACE/$CUSTOM_SCRIPT && Diy-Part1
     - name: Update & Install Feeds
       run: |
         cd openwrt
         ./scripts/feeds update -a
         ./scripts/feeds install -a
-
-    - name: Run Diy-Part2 Scripts
+    - name: Run After-Update-Feeds Script
       run: |
-        [ -f $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
+        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
+        [ -e $MAC80211 ] && mv $MAC80211 openwrt/package/kernel/mac80211/files/lib/wifi/mac80211.sh
+        [ -e $MWAN3 ] && mv $MWAN3 openwrt/package/feeds/packages/mwan3/files/etc/config/mwan3
+        [ -e $AUTOUPDATE ] && mv $AUTOUPDATE openwrt/package/base-files/files/bin/AutoUpdate.sh
         cd openwrt
-        source $GITHUB_WORKSPACE/$DIY_SCRIPT && Diy-Part2
-
-    - name: Download Packages
+        source $GITHUB_WORKSPACE/$CUSTOM_SCRIPT && Diy_Core && Diy-Part2
+    - name: Download Package
       run: |
         cd openwrt
         make defconfig
-        make download -j$(nproc) V=s
+        make download -j$(nproc)
+        find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
-
-    - name: Compile the Openwrt
+    - name: Compile the Firmware
       run: |
         cd openwrt
-        make -j$(nproc) || make -j1 || make -j1 V=s
-
-    - name: Run Diy-Part3 Scripts
+        make -j$(nproc) V=s
+    - name: Run After-Compile-OpenWRT Script
       run: |
-        echo "## $(date +"%Y%m%d")-AutoBuild" > update_log.txt
         cd openwrt
-        source $GITHUB_WORKSPACE/$DIY_SCRIPT && Diy-Part3
-        echo "Artifacts_DATE=$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
-
+        source $GITHUB_WORKSPACE/$CUSTOM_SCRIPT && Diy_Core && Diy-Part3
     - name: Upload Firmware to Artifacts
       uses: actions/upload-artifact@main
-      if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
       with:
-        name: OpenWrt_Firmware_${{ env.Artifacts_DATE }}
+        name: OpenWrt
         path: openwrt/bin/Firmware
-        
-    - name: Upload Firmware directory to Artifacts
-      uses: actions/upload-artifact@main
-      if: env.UPLOAD_BIN_DIR == 'true' && !cancelled()
-      with:
-        name: OpenWrt_bin_${{ env.Artifacts_DATE }}
-        path: openwrt/bin
 
-    - name: Upload Firmware to Releases
-      uses: softprops/action-gh-release@v1
+    - name: Generate Tag
+      id: tag
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+      run: |
+        echo " - $(date +"%Y%m%d")-AutoUpdate" > update_log.txt
+        echo "::set-env name=FIRMWARE::openwrt/bin/Firmware"
+        echo "::set-output name=status::success"
+    - name: Upload Firmware to Github Release
+      uses: softprops/action-gh-release@v1
+      if: steps.tag.outputs.status == 'success' && !cancelled()
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       with:
         tag_name: AutoUpdate
         body_path: update_log.txt
-        files: openwrt/bin/Firmware/*
-        
-    - name: Delete workflow runs
-      if: env.DELETE_WORKFLOW_RUNS == 'true' && !cancelled()
-      uses: ActionsRML/delete-workflow-runs@main
-      with:
-        retain_days: 1
-        keep_minimum_runs: 3
-        
-    - name: Remove old Releases
-      uses: dev-drprasad/delete-older-releases@v0.1.0
-      if: env.REMOVE_OLD_RELEASE == 'true' && !cancelled()
-      with:
-        keep_latest: 3
-        delete_tags: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        files: ${{ env.FIRMWARE }}/*
