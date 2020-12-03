@@ -5,7 +5,7 @@
 
 Version=V4.0
 DEFAULT_DEVICE=konbarbox
-Github=https://github.com/konbar/AutoBuild-Actions
+Github=https://github.com/Hyy2001X/AutoBuild-Actions
 
 TIME() {
 	echo -ne "\n[$(date "+%H:%M:%S")] "
