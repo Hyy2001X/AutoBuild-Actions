@@ -119,4 +119,3 @@ EOF
 		devidx=$(($devidx + 1))
 	done
 }
-
