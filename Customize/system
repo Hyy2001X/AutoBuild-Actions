@@ -37,4 +37,3 @@ config led 'led_wlan5g'
 	option mode 'link tx rx'
 	option default '0'
 	option dev 'wlan1'
-
