@@ -4,8 +4,8 @@
 # AutoBuild Actions
 
 Diy_Core() {
-Author=Hyy2001
-Default_Device=d-team_newifi-d2
+Author=beiyuqu
+Default_Device=newifi-d2
 }
 
 Diy-Part1() {
