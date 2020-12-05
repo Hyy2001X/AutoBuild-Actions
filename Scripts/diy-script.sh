@@ -26,16 +26,15 @@ ExtraPackages svn network/services hostapd https://github.com/openwrt/openwrt/tr
 ExtraPackages git lean luci-app-autoupdate https://github.com/Hyy2001X main
 ExtraPackages git lean luci-theme-argon https://github.com/jerrykuku 18.06
 ExtraPackages git other luci-app-argon-config https://github.com/jerrykuku master
-ExtraPackages git other luci-app-adguardhome https://github.com/Hyy2001X master
+# ExtraPackages git other luci-app-adguardhome https://github.com/Hyy2001X master
 ExtraPackages svn other luci-app-smartdns https://github.com/project-openwrt/openwrt/trunk/package/ntlf9t
 ExtraPackages svn other smartdns https://github.com/project-openwrt/openwrt/trunk/package/ntlf9t
-ExtraPackages git other OpenClash https://github.com/vernesong master
+# ExtraPackages git other OpenClash https://github.com/vernesong master
 ExtraPackages git other luci-app-serverchan https://github.com/tty228 master
 ExtraPackages svn other luci-app-socat https://github.com/project-openwrt/openwrt/trunk/package/lienol
 
-echo "安装pass************"
-ls 
-git clone https://github.com/xiaorouji/openwrt-passwall.git other/
+# 获取自定义软件地址
+echo "src-git openwrtpasswall https://github.com/xiaorouji/openwrt-passwall" >> feeds.conf.default
 # [UPX 压缩] ExtraPackages git other openwrt-upx https://github.com/Hyy2001X master
 # [应用过滤] ExtraPackages git OAF openwrt-OpenAppFilter https://github.com/Lienol master
 # [AdGuardHome 核心] ExtraPackages svn other AdGuardHome https://github.com/project-openwrt/openwrt/trunk/package/ntlf9t
@@ -53,7 +52,6 @@ sed -i "s?$Lede_Version?$Lede_Version Compiled by $Author [$Display_Date]?g" $De
 echo "$Openwrt_Version" > package/base-files/files/etc/openwrt_info
 sed -i "s?Openwrt?Openwrt $Openwrt_Version / AutoUpdate $AutoUpdate_Version?g" package/base-files/files/etc/banner
 
-echo "显示错误！****************************"
 # 修改默认ip
 sed -i 's/192.168.1.1/192.168.100.1/g' package/base-files/files/bin/config_generate
 
