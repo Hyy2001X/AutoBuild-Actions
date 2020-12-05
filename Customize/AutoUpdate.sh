@@ -4,8 +4,8 @@
 # AutoUpdate
 
 Version=V4.1
-DEFAULT_DEVICE=d-team_newifi-d2
-Github=https://github.com/Hyy2001X/AutoBuild-Actions
+DEFAULT_DEVICE=newifi-d2
+Github=https://github.com/beiyuqu/Actions-OpenWrt
 
 TIME() {
 	echo -ne "\n[$(date "+%H:%M:%S")] "
