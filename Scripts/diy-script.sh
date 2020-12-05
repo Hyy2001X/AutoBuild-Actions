@@ -51,6 +51,7 @@ sed -i "s?$Lede_Version?$Lede_Version Compiled by $Author [$Display_Date]?g" $De
 echo "$Openwrt_Version" > package/base-files/files/etc/openwrt_info
 sed -i "s?Openwrt?Openwrt $Openwrt_Version / AutoUpdate $AutoUpdate_Version?g" package/base-files/files/etc/banner
 
+echo "显示错误！****************************"
 # 修改默认ip
 sed -i 's/192.168.1.1/192.168.100.1/g' package/base-files/files/bin/config_generate
 
