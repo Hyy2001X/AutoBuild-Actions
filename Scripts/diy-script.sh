@@ -50,6 +50,15 @@ echo "Router: $TARGET_PROFILE"
 sed -i "s?$Lede_Version?$Lede_Version Compiled by $Author [$Display_Date]?g" $Default_File
 echo "$Openwrt_Version" > package/base-files/files/etc/openwrt_info
 sed -i "s?Openwrt?Openwrt $Openwrt_Version / AutoUpdate $AutoUpdate_Version?g" package/base-files/files/etc/banner
+
+# 修改默认ip
+sed -i 's/192.168.1.1/192.168.100.1/g' package/base-files/files/bin/config_generate
+
+# 删除默认主题
+sed -i 's/+luci-theme-bootstrap//g' feeds/luci/collections/luci/Makefile
+
+# 设置默认密码
+sed -i 's/^root.*/root:$1$tPYTHhT8$XRiZ79P8LHjTJvevrFt.F1:18473:0:99999:7:::/g' package/base-files/files/etc/shadow
 }
 
 Diy-Part3() {
