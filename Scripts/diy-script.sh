@@ -23,21 +23,10 @@ ExtraPackages svn network/services ppp https://github.com/openwrt/openwrt/trunk/
 ExtraPackages svn network/services hostapd https://github.com/openwrt/openwrt/trunk/package/network/services
 # ExtraPackages svn kernel mt76 https://github.com/openwrt/openwrt/trunk/package/kernel
 
-ExtraPackages git lean luci-app-autoupdate https://github.com/Hyy2001X main
-ExtraPackages git lean luci-theme-argon https://github.com/jerrykuku 18.06
-ExtraPackages git other luci-app-argon-config https://github.com/jerrykuku master
-# ExtraPackages git other luci-app-adguardhome https://github.com/Hyy2001X master
-ExtraPackages svn other luci-app-smartdns https://github.com/project-openwrt/openwrt/trunk/package/ntlf9t
-ExtraPackages svn other smartdns https://github.com/project-openwrt/openwrt/trunk/package/ntlf9t
-# ExtraPackages git other OpenClash https://github.com/vernesong master
-ExtraPackages git other luci-app-serverchan https://github.com/tty228 master
-ExtraPackages svn other luci-app-socat https://github.com/project-openwrt/openwrt/trunk/package/lienol
+ExtraPackages git lean luci-app-autoupdate https://github.com/Hyy2001X mai
 
-# 获取自定义软件地址
-echo "src-git openwrtpasswall https://github.com/xiaorouji/openwrt-passwall" >> feeds.conf.default
-# [UPX 压缩] ExtraPackages git other openwrt-upx https://github.com/Hyy2001X master
-# [应用过滤] ExtraPackages git OAF openwrt-OpenAppFilter https://github.com/Lienol master
-# [AdGuardHome 核心] ExtraPackages svn other AdGuardHome https://github.com/project-openwrt/openwrt/trunk/package/ntlf9t
+# 科学上网插件
+sed -i 's/^#\(.*helloworld\)/\1/' feeds.conf.default
 }
 
 Diy-Part2() {
