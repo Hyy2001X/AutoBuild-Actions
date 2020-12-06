@@ -23,7 +23,7 @@ ExtraPackages svn network/services ppp https://github.com/openwrt/openwrt/trunk/
 ExtraPackages svn network/services hostapd https://github.com/openwrt/openwrt/trunk/package/network/services
 # ExtraPackages svn kernel mt76 https://github.com/openwrt/openwrt/trunk/package/kernel
 
-ExtraPackages git lean luci-app-autoupdate https://github.com/Hyy2001X mai
+ExtraPackages git lean luci-app-autoupdate https://github.com/Hyy2001X main
 
 # 科学上网插件
 sed -i 's/^#\(.*helloworld\)/\1/' feeds.conf.default
