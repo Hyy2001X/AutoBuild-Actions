@@ -5,7 +5,7 @@
 
 Diy_Core() {
 Author=konbar
-Default_Device=d-team_newifi-d2
+Default_Device=newifi-d2-konbar
 }
 
 Diy-Part1() {
