@@ -22,6 +22,8 @@ Actions for Building OpenWRT
 
 2. 编辑`/Customize/AutoUpdate.sh`文件,修改`第 7 行`为你的 **设备名称**,修改`第 8 行`为你的 **Github 地址**
 
+   **注: 设备名称 必须为 Openwrt 官方赋予的名称,例如 d-team_newifi-d2**
+
 3. 编辑`/Sctipts/diy-script.sh`文件,修改`第 7 行`为作者,作者将在 OpenWrt 首页显示
 
 4. 添加额外的软件包: 编辑`Scrips/diy-script.sh`中的 `Diy-Part1()` 函数,参照下方语法添加第三方包到源码
