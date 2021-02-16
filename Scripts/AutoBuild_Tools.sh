@@ -3,17 +3,18 @@
 # AutoBuild Module by Hyy2001
 # AutoBuild_Tools for Openwrt
 
-Version=V1.2-BETA
+Version=V1.2.1-BETA
 
 AutoBuild_Tools() {
 	while :
 	do
 		clear
-		echo -e "USB \ Samba 工具箱 ${Version}\n"
+		echo -e "AutoBuild 固件工具箱 ${Version}\n"
 		echo "1.内部空间扩展"
-		echo "2.Samba 共享工具箱"
+		echo "2.Samba 共享"
 		echo "3.挂载硬盘"
 		echo "4.查看挂载点"
+		echo "5.安装软件包"
 		echo -e "\nq.退出\n"
 		read -p "请从上方选择一个操作:" Choose
 		case $Choose in
@@ -36,6 +37,9 @@ AutoBuild_Tools() {
 			clear && mount
 			Enter
 		;;
+		5)
+			Install_UI	
+		;;
 		esac
 	done
 }
@@ -47,7 +51,7 @@ AutoExpand_UI() {
 	clear
 	echo -e "Newifi-D2 一键扩展内部空间\n"
 	USB_Check_Core
-	if [ ! -z "${Check_Disk}" ];then
+	if [[ ! -z "${Check_Disk}" ]];then
 		for ((i=1;i<=${Disk_Number};i++));
 		do
 			Disk_info=$(sed -n ${i}p ${Disk_Processed_List})
@@ -56,22 +60,28 @@ AutoExpand_UI() {
 		echo -e "\nq.返回"
 		echo "r.重新载入列表"
 	else
-		echo "未检测到外接硬盘!"
-		exit
+		echo "未检测到外接硬盘!" && sleep 2
+		return
 	fi
 	echo ""
 	read -p "请输入要操作的硬盘编号[1-${Disk_Number}]:" Choose
 	echo ""
 	case ${Choose} in
 	q)
-		break
+		return
 	;;
 	r)
 		AutoExpand_UI
 	;;
 	*)
 		if [ ${Choose} -gt 0 ] > /dev/null 2>&1 && [ ${Choose} -le ${Disk_Number} ] > /dev/null 2>&1;then
-			AutoExpand_Core
+			
+			which mkfs.ext4 > /dev/null 2>&1
+			if [ "$?" -eq 0 ];then
+				AutoExpand_Core
+			else
+				echo "请先安装 [e2fsprogs] !" && sleep 3
+			fi			
 		else
 			echo "选择错误,请输入正确的选项!"
 			sleep 2 && AutoExpand_UI
@@ -119,17 +129,12 @@ AutoExpand_Core() {
 		Choosed_Disk_Mounted="$(mount | grep "${Choosed_Disk}" | awk '{print $3}')"
 		echo "取消挂载: '${Choosed_Disk}' on '${Choosed_Disk_Mounted}' ..."
 		umount -l ${Choosed_Disk_Mounted} > /dev/null 2>&1
-		if [ "$(mount)" =~ "${Choosed_Disk_Mounted}" ];then
+		if [ "$(mount)" =~ "${Choosed_Disk_Mounted}" ] > /dev/null 2>&1 ;then
 			echo "取消挂载: '${Choosed_Disk_Mounted}' 失败 !"
 			exit
 		fi
 	fi
-	if [[ ! "$(opkg list | awk '{print $1}')" =~ "e2fsprogs" ]];then
-		echo "正在安装: 'e2fsprogs',请耐心等待 ..."
-		opkg update > /dev/null 2>&1
-		opkg install e2fsprogs > /dev/null 2>&1
-	fi
-	echo "正在格式化硬盘: '${Choosed_Disk}' 为 'ext4' ..."
+	echo "正在格式化硬盘: '${Choosed_Disk}' 为 'ext4' 格式 ..."
 	mkfs.ext4 -F ${Choosed_Disk} > /dev/null 2>&1
 	echo "格式化完成! 挂载硬盘: '${Choosed_Disk}' 到 ' /tmp/extroot' ..."
 	mkdir -p /tmp/introot && mkdir -p /tmp/extroot
@@ -152,16 +157,29 @@ AutoExpand_Core() {
 	done
 	uci commit fstab
 	umount -l /mnt/bak
-	echo "操作结束,外接硬盘: '${Choosed_Disk}' 已挂载到 '/'."
-	sleep 3
-	break
+	echo -e "操作结束,外接硬盘: '${Choosed_Disk}' 已挂载到 '/'.\n"
+	read -p "挂载完成后需要重启生效,是否立即重启路由器?[Y/n]:" Choose
+	if [ ${Choose} == Y ] || [ ${Choose} == y ];then
+		sleep 3 && echo -e "\n正在重启路由器,请耐心等待 ..."
+		sync
+		reboot
+	else
+		echo "用户已取消重启操作."
+		sleep 3
+		break
+	fi
 }
 
 List_Disk() {
-	if [ ! -z ${3} ];then
-		echo "${i}.外接硬盘: '${1}' 挂载点: '${2}' 格式: '${3}' 可用空间: ${4}"
+	if [[ ${2} == "/" ]];then
+		_Type="[不可用]"
 	else
-		echo "${i}.外接硬盘: '${1}' 格式: '${2}' 未挂载"
+		_Type="[可用]"
+	fi
+	if [[ ! -z ${3} ]];then
+		echo "${i}.${_Type}硬盘: '${1}' 挂载点: '${2}' 格式: '${3}' 可用空间: ${4}"
+	else
+		echo "${i}.硬盘: '${1}' 格式: '${2}' 未挂载"
 	fi
 }
 
@@ -229,6 +247,61 @@ Mount_Samba_Devices() {
 	sleep 2
 }
 
+Install_UI() {
+while :
+	do
+		clear
+		echo -e "安装软件包\n"
+		echo "1.更新软件包列表"
+		Install_UI_Mod 2 block-mount
+		Install_UI_Mod 3 e2fsprogs
+		echo "x.自定义软件包名"
+		echo -e "\nq.返回\n"
+		read -p "请从上方选择一个操作:" Choose
+		echo ""
+		case $Choose in
+		q)
+			break
+		;;
+		x)
+			echo "常用的附加参数:"
+			echo "--force-depends		在安装、删除软件包时无视失败的依赖"
+			echo "--force-downgrade	允许降级安装软件包"
+			echo -e "--force-reinstall	重新安装软件包\n"
+			read -p "请输入你想安装的软件包名:" PKG_NAME
+			Install_opkg_mod $PKG_NAME
+		;;
+		1)
+			opkg update
+		;;
+		2)
+			Install_opkg_mod block-mount	
+		;;
+		3)
+			Install_opkg_mod e2fsprogs
+		;;
+		esac
+	done
+}
+
+Install_UI_Mod() {
+	if [[ "$(opkg list | awk '{print $1}')" =~ "${2}" ]] > /dev/null 2>&1 ;then
+		echo "${1}.安装 [${2}] [已安装]"
+	else
+		echo "${1}.未安装 [${2}] [已安装]"
+	fi
+}
+
+Install_opkg_mod() {
+	opkg install ${*}
+	if [[ "$(opkg list | awk '{print $1}')" =~ "${1}" ]] > /dev/null 2>&1 ;then
+		echo -e "\n${1} 安装成功!"
+	else
+		echo -e "\n${1} 安装失败!"
+	fi
+	sleep 2
+}
+
 Enter() {
 	echo "" && read -p "按下[回车]键以继续..." Key
 }
@@ -243,9 +316,9 @@ Samba_Tmp="/tmp/AutoSamba"
 Disk_List="${Samba_Tmp}/Disk_List"
 UCI_Show_List="${Samba_Tmp}/UCI_List"
 [ ! -d ${Samba_Tmp} ] && mkdir -p ${Samba_Tmp}
-which block
+which block > /dev/null 2>&1
 if [ "$?" -eq 0 ];then
 	AutoBuild_Tools
 else
-	echo -e "\nAutoBuild_Tools 不适用于此固件,请先安装[block-mount] !"
+	echo -e "\nAutoBuild_Tools 不适用于此固件,请先安装 [block-mount] !"
 fi
