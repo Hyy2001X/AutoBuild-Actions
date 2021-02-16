@@ -23,10 +23,21 @@ Diy_Part1_Base() {
 		ExtraPackages git lean helloworld https://github.com/fw876 master
 		sed -i 's/143/143,25,5222/' package/lean/helloworld/luci-app-ssr-plus/root/etc/init.d/shadowsocksr
 	fi
+	if [[ "${INCLUDE_HelloWorld}" == "true" ]];then
+		ExtraPackages git lean luci-app-vssr https://github.com/jerrykuku master
+	fi
+	if [[ "${INCLUDE_Bypass}" == "true" ]];then
+		ExtraPackages git other luci-app-bypass https://github.com/garypang13 main
+		find package/*/ feeds/*/ -maxdepth 2 -path "*luci-app-bypass/Makefile" | xargs -i sed -i 's/shadowsocksr-libev-ssr-redir/shadowsocksr-libev-alt/g' {}
+		find package/*/ feeds/*/ -maxdepth 2 -path "*luci-app-bypass/Makefile" | xargs -i sed -i 's/shadowsocksr-libev-ssr-server/shadowsocksr-libev-server/g' {}
+	fi
+	if [[ "${INCLUDE_OpenClash}" == "true" ]];then
+		ExtraPackages svn other luci-app-openclash https://github.com/vernesong/OpenClash/trunk
+	fi
 	if [[ "${INCLUDE_Keep_Latest_Xray}" == "true" ]];then
-		Update_Makefile xray package/lean/helloworld/xray
-		Update_Makefile v2ray package/lean/v2ray
-		Update_Makefile v2ray-plugin package/lean/v2ray-plugin
+		Update_Makefile xray-core package/lean/helloworld/xray-core
+		# Update_Makefile v2ray package/lean/v2ray
+		# Update_Makefile v2ray-plugin package/lean/v2ray-plugin
 	fi
 	if [[ "${INCLUDE_AutoBuild_Tools}" == "true" ]];then
 		Replace_File Scripts/AutoBuild_Tools.sh package/base-files/files/bin
@@ -57,7 +68,7 @@ Diy_Part2_Base() {
 	else
 		sed -i "s?Openwrt?Openwrt ${Openwrt_Version}?g" package/base-files/files/etc/banner
 	fi
-	Replace_File Customize/uhttpd.po package/feeds/luci/applications/luci-app-uhttpd/po/zh-cn
+	Replace_File Customize/uhttpd.po feeds/luci/applications/luci-app-uhttpd/po/zh-cn
 	Replace_File Customize/webadmin.po package/lean/luci-app-webadmin/po/zh-cn
 	[[ -z "${Author}" ]] && Author="Unknown"
 	echo "Author: ${Author}"
@@ -187,7 +198,7 @@ Update_Makefile() {
 			sed -i "s?PKG_VERSION:=${Source_Version}?PKG_VERSION:=${Offical_Version}?g" ${Makefile}
 			wget -q "${PKG_DL_URL}${Offical_Version}?" -O /tmp/tmp_file
 			if [[ "$?" -eq 0 ]];then
-				Offical_HASH=$(sha256sum /tmp/tmp_file | cut -d ' ' -f1)
+				Offical_HASH="$(sha256sum /tmp/tmp_file | cut -d ' ' -f1)"
 				sed -i "s?PKG_HASH:=${Source_HASH}?PKG_HASH:=${Offical_HASH}?g" ${Makefile}
 			else
 				echo "Failed to update the package [${PKG_NAME}],skip update ..."
