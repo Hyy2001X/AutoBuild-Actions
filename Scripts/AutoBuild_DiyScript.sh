@@ -10,7 +10,7 @@ Diy_Core() {
 	INCLUDE_AutoUpdate=true
 	INCLUDE_AutoBuild_Tools=true
 	INCLUDE_mt7621_OC1000MHz=true
-	INCLUDE_DRM_I915=false
+	INCLUDE_DRM_I915=true
 
 	INCLUDE_SSR_Plus=true
 	INCLUDE_Passwall=true
