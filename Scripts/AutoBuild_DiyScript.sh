@@ -4,8 +4,8 @@
 # AutoBuild DiyScript
 
 Diy_Core() {
-	Author=Hyy2001
-	Default_Device=x86_64
+	Author=Hapi
+	Default_Device=d-team_newifi-d2
 
 	INCLUDE_AutoUpdate=true
 	INCLUDE_AutoBuild_Tools=true
@@ -16,7 +16,7 @@ Diy_Core() {
 
 Firmware-Diy() {
 	Update_Makefile exfat package/kernel/exfat
-
+	sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 	case ${TARGET_PROFILE} in
 	d-team_newifi-d2)
 		Replace_File CustomFiles/mac80211.sh package/kernel/mac80211/files/lib/wifi
