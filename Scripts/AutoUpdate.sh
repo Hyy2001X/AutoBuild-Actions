@@ -3,7 +3,7 @@
 # AutoBuild Module by Hyy2001
 # AutoUpdate for Openwrt
 
-Version=V5.5
+Version=V5.6
 
 Shell_Helper() {
 	echo -e "\n使用方法: bash /bin/AutoUpdate.sh [参数1] [参数2]"
@@ -71,9 +71,9 @@ TIME() {
 	echo -ne "\n[$(date "+%H:%M:%S")] "
 }
 
-opkg list | awk '{print $1}' > /tmp/Package_list
 Input_Option="$1"
 Input_Other="$2"
+opkg list | awk '{print $1}' > /tmp/Package_list
 CURRENT_Version="$(awk 'NR==1' /etc/openwrt_info)"
 Github="$(awk 'NR==2' /etc/openwrt_info)"
 Github_Download="${Github}/releases/download/AutoUpdate"
@@ -81,8 +81,10 @@ Author="${Github##*com/}"
 Github_Tags="https://api.github.com/repos/${Author}/releases/latest"
 DEFAULT_Device="$(awk 'NR==3' /etc/openwrt_info)"
 Firmware_Type="$(awk 'NR==4' /etc/openwrt_info)"
+_PROXY_URL="https://download.fastgit.org"
 TMP_Available="$(df -m | grep "/tmp" | awk '{print $4}' | awk 'NR==1' | awk -F. '{print $1}')"
 Overlay_Available="$(df -h | grep ":/overlay" | awk '{print $4}' | awk 'NR==1')"
+Retry_Times=4
 case ${DEFAULT_Device} in
 x86_64)
 	[[ -z ${Firmware_Type} ]] && Firmware_Type="img"
@@ -186,19 +188,20 @@ else
 	;;
 	esac
 fi
-if [[ ! "${Force_Update}" == "1" ]];then
-	grep "curl" /tmp/Package_list > /dev/null 2>&1
-	if [[ ! $? -ne 0 ]];then
-		Google_Check=$(curl -I -s --connect-timeout 3 google.com -w %{http_code} | tail -n1)
-		if [ ! "$Google_Check" == 301 ];then
-			TIME && echo "Google 连接失败,尝试使用 [FastGit] 镜像加速!"
-			PROXY_URL="https://download.fastgit.org"
-		fi
+grep "curl" /tmp/Package_list > /dev/null 2>&1
+if [[ ! $? -ne 0 ]];then
+	Google_Check=$(curl -I -s --connect-timeout 3 google.com -w %{http_code} | tail -n1)
+	if [ ! "$Google_Check" == 301 ];then
+		TIME && echo "Google 连接失败,尝试使用 [FastGit] 镜像加速!"
+		PROXY_URL="${_PROXY_URL}"
 	fi
-	if [[ "${TMP_Available}" -lt "${Space_Req}" ]];then
-		TIME && echo "/tmp 空间不足: [${Space_Req}M],无法执行更新!"
-		exit
-	fi
+else
+	TIME && echo "无法确定网络环境,默认使用 [FastGit] 镜像加速!"
+	PROXY_URL="${_PROXY_URL}"
+fi
+if [[ "${TMP_Available}" -lt "${Space_Req}" ]];then
+	TIME && echo "/tmp 空间不足: [${Space_Req}M],无法执行更新!"
+	exit
 fi
 Install_Pkg wget
 if [[ -z "${CURRENT_Version}" ]];then
@@ -207,7 +210,7 @@ if [[ -z "${CURRENT_Version}" ]];then
 fi
 if [[ -z "${CURRENT_Device}" ]];then
 	[[ "${Force_Update}" == "1" ]] && exit
-	TIME && echo "警告: 当前设备名称获取失败,使用预设名称[$DEFAULT_Device]"
+	TIME && echo "警告: 当前设备名称获取失败,使用预设名称: [$DEFAULT_Device]"
 	CURRENT_Device="${DEFAULT_Device}"
 fi
 TIME && echo "正在检查版本更新..."
@@ -252,9 +255,7 @@ if [[ ! ${Force_Update} == 1 ]];then
 		fi
 	fi
 fi
-if [ ! -z "${PROXY_URL}" ];then
-	Github_Download=${PROXY_URL}/${Author}/releases/download/AutoUpdate
-fi
+[[ ! -z "${PROXY_URL}" ]] && Github_Download=${PROXY_URL}/${Author}/releases/download/AutoUpdate
 echo -e "\n云端固件名称: ${Firmware}"
 echo "固件下载地址: ${Github_Download}"
 echo "固件保存位置: /tmp/Downloads"
@@ -262,11 +263,23 @@ echo "固件保存位置: /tmp/Downloads"
 rm -f /tmp/Downloads/*
 TIME && echo "正在下载固件,请耐心等待..."
 cd /tmp/Downloads
-wget -q "${Github_Download}/${Firmware}" -O ${Firmware}
-if [[ ! "$?" == 0 ]];then
-	TIME && echo "固件下载失败,请检查网络后重试!"
-	exit
-fi
+while [ ${Retry_Times} -ge 0 ];
+do
+	if [[ ${Retry_Times} == 3 ]];then
+		TIME && echo "下载失败,尝试使用 [FastGit] 镜像加速!"
+		Github_Download=${_PROXY_URL}/${Author}/releases/download/AutoUpdate
+	fi
+	if [[ ${Retry_Times} == 0 ]];then
+		TIME && echo "固件下载失败,请检查网络后重试!"
+		exit
+	else
+		wget -q --tries 1 --timeout 5 "${Github_Download}/${Firmware}" -O ${Firmware}
+		[[ "$?" == 0 ]] && break
+	fi
+	Retry_Times=$((${Retry_Times} - 1))
+	TIME && echo "下载失败,剩余尝试次数: [${Retry_Times}]"
+	sleep 1
+done
 TIME && echo "固件下载成功!"
 TIME && echo "正在获取云端固件MD5,请耐心等待..."
 wget -q ${Github_Download}/${Firmware_Detail} -O ${Firmware_Detail}
