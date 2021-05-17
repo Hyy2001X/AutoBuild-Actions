@@ -4,16 +4,16 @@
 # AutoBuild DiyScript
 
 Diy_Core() {
-	Author=Hyy2001
-	Default_Device=x86_64
+	Author=Thanf
+	Default_Device=d-team_newifi-d2
 	Short_Firmware_Date=true
-	Default_IP_Address=192.168.1.1
+	Default_IP_Address=3.3.3.1
 
 	INCLUDE_AutoUpdate=true
 	INCLUDE_AutoBuild_Tools=true
 	INCLUDE_DRM_I915=true
-	INCLUDE_Theme_Argon=true
-	INCLUDE_Obsolete_PKG_Compatible=false
+	INCLUDE_Theme_Argon=false
+	INCLUDE_Obsolete_PKG_Compatible=true
 }
 
 Firmware-Diy() {
