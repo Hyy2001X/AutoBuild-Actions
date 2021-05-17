@@ -21,7 +21,7 @@ Firmware-Diy() {
 	AddPackage svn ../feeds/packages/admin netdata https://github.com/openwrt/packages/trunk/admin
 
 	case ${TARGET_PROFILE} in
-	d-team_newifi-d2
+	d-team_newifi-d2)
 		Replace_File CustomFiles/mac80211.sh package/kernel/mac80211/files/lib/wifi
 		Replace_File CustomFiles/system_d-team_newifi-d2 package/base-files/files/etc/config system
 		Replace_File CustomFiles/Patches/102-mt7621-fix-cpu-clk-add-clkdev.patch target/linux/ramips/patches-5.4
