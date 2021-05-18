@@ -1,6 +1,6 @@
-git other OpenClash https://github.com/vernesong
-git other luci-app-usb3disable https://github.com/rufengsuixing
-svn other luci-app-eqos https://github.com/kenzok8/openwrt-packages/trunk
-git other luci-app-bearDropper https://github.com/NateLol
-svn package/kernel mt76 https://github.com/openwrt/openwrt/trunk/package/kernel
-git other luci-app-dnsfilter https://github.com/garypang13
+git other OpenClash vernesong
+git other luci-app-usb3disable rufengsuixing
+svn other luci-app-eqos kenzok8/openwrt-packages/trunk
+git other luci-app-bearDropper NateLol
+svn package/kernel mt76 openwrt/openwrt/trunk/package/kernel
+git other luci-app-dnsfilter garypang13 main

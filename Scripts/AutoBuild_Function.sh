@@ -105,24 +105,24 @@ Firmware-Diy_Base() {
 		Replace_File Scripts/AutoBuild_Tools.sh package/base-files/files/bin
 	}
 	[[ "${INCLUDE_AutoUpdate}" == true ]] && {
-		AddPackage git lean luci-app-autoupdate https://github.com/Hyy2001X main
+		AddPackage git lean luci-app-autoupdate Hyy2001X main
 		Replace_File Scripts/AutoUpdate.sh package/base-files/files/bin
 	}
 	[[ "${INCLUDE_Theme_Argon}" == true ]] && {
 		case ${Openwrt_Author} in
 		coolsnowwolf)
-			AddPackage git lean luci-theme-argon https://github.com/jerrykuku 18.06
+			AddPackage git lean luci-theme-argon jerrykuku 18.06
 		;;
 		*)
 			case ${Current_Branch} in
 			19.07)
-				AddPackage git other luci-theme-argon https://github.com/jerrykuku v2.2.5
+				AddPackage git other luci-theme-argon jerrykuku v2.2.5
 			;;
 			21.02)
-				AddPackage git other luci-theme-argon https://github.com/jerrykuku
+				AddPackage git other luci-theme-argon jerrykuku master
 			;;
 			18.06)
-				AddPackage git other luci-theme-argon https://github.com/jerrykuku 18.06
+				AddPackage git other luci-theme-argon jerrykuku 18.06
 			;;
 			*)
 				TIME "[ERROR] Unknown Openwrt branch: [${Current_Branch}] !"
@@ -131,7 +131,7 @@ Firmware-Diy_Base() {
 		;;
 		esac
 	}
-	New_IP_Address="{Default_IP_Address}"
+	New_IP_Address="${Default_IP_Address}"
 	if [[ -n "${Defined_IP_Address}" ]];then
 		TIME "Using defined IP Address [${Defined_IP_Address}] ..."
 		New_IP_Address="${Defined_IP_Address}"
@@ -164,14 +164,13 @@ Firmware-Diy_Base() {
 	coolsnowwolf)
 		Replace_File CustomFiles/Depends/coremark_lede.sh package/lean/coremark coremark.sh
 		Replace_File CustomFiles/Depends/cpuinfo_x86 package/lean/autocore/files/x86/sbin cpuinfo
-		AddPackage git other helloworld https://github.com/fw876 master
+		AddPackage git other helloworld fw876 master
 		sed -i 's/143/143,8080/' $(PKG_Finder d package luci-app-ssr-plus)/root/etc/init.d/shadowsocksr
 		sed -i "s?iptables?#iptables?g" ${Version_File}
 		sed -i "s?${Old_Version}?${Old_Version} Compiled by ${Author} [${Display_Date}]?g" ${Version_File}
 		[[ "${INCLUDE_DRM_I915}" == true ]] && Replace_File CustomFiles/Depends/i915-5.4 target/linux/x86 config-5.4
 	;;
 	immortalwrt)
-		sed -i 's/143/143,8080/' $(PKG_Finder d package luci-app-ssr-plus)/root/etc/init.d/shadowsocksr
 		Replace_File CustomFiles/Depends/coremark_ImmortalWrt.sh package/base-files/files/etc coremark.sh
 		Replace_File CustomFiles/Depends/ImmortalWrt package/base-files/files/etc openwrt_release
 		Replace_File CustomFiles/Depends/cpuinfo_x86 package/lean/autocore/files/x86/sbin cpuinfo
@@ -198,7 +197,7 @@ Firmware-Diy_Base() {
 			19.07 | 21.02)
 				Replace_File CustomFiles/Patches/0003-upx-ucl-${Current_Branch}.patch ./
 				cat 0003-upx-ucl-${Current_Branch}.patch | patch -p1 > /dev/null 2>&1
-				AddPackage svn ../feeds/packages/lang golang https://github.com/coolsnowwolf/packages/trunk/lang
+				AddPackage svn ../feeds/packages/lang golang coolsnowwolf/packages/trunk/lang
 				TIME "Start to convert zh-cn translation files to zh_Hans ..."
 				Replace_File Scripts/Convert_Translation.sh package
 				cd ./package
@@ -365,7 +364,7 @@ AddPackage() {
 		PKG_PROTO=${1}
 		PKG_DIR=${2}
 		PKG_NAME=${3}
-		REPO_URL=${4}
+		REPO_URL="https://github.com/${4}"
 		REPO_BRANCH=${5}
 	;;
 	*)

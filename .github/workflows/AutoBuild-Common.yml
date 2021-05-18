@@ -6,7 +6,7 @@
 # Modify: Hyy2001X
 #=======================================================
 
-name: AutoBuild-Template
+name: AutoBuild-Common
 
 on:
   repository_dispatch:

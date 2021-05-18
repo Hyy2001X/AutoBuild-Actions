@@ -1,7 +1,7 @@
 Sysinfo() {
 	[ -f /etc/openwrt_info ] && source /etc/openwrt_info > /dev/null 2>&1
 	export Target=${DEFAULT_Device}
-	[ -n "${CURRENT_Version}" ] && export Version="${CURRENT_Version}" || Version=Unknown
+	[ -n "${CURRENT_Version}" ] && export Version="${CURRENT_Version}" || Version=未知
 	[ -z "${Target}" ] && export Target=$(jsonfilter -e '@.model.id' < /etc/board.json | tr ',' '_')
 	export IP_Address=$(ifconfig -a | grep inet | grep -v 127.0.0.1 | grep -v inet6 | awk '{print $2}' | tr -d "addr:" | awk 'NR==1')
 	export CoreMark=$([ -f /etc/bench.log ] && egrep -o "[0-9]+" /etc/bench.log | awk 'NR==1')
@@ -14,8 +14,8 @@ Sysinfo() {
 	echo -e "           固件版本:		${Skyb}${Version}${White}"
 	echo "           IP 地址 : 		${IP_Address}"
 	echo "           可用空间:		${Overlay_Available}"
-	echo "           运行时间: 		${Startup}"
 	[ -n "${CoreMark}" ] && echo "           性能得分:		${CoreMark}"
+	echo "           运行时间: 		${Startup}"
 	echo ""
 }
 
@@ -28,7 +28,7 @@ Skyb="\e[36m"
 clear
 [ -e /tmp/.failsafe ] && export FAILSAFE=1
 [ -f /etc/banner ] && {
-	echo -e "$Blue"
+	echo -e "$Skyb"
 	cat /etc/banner
 	echo -e "$White"
 }
@@ -64,10 +64,20 @@ esac
 	unset FILE
 }
 
+service() {
+	[ -f "/etc/init.d/$1" ] || {
+		echo -e "${Red}service "'"'"$1"'"'" not found, the following services are available:${White}\n"
+		ls "/etc/init.d"
+		return 1
+	}
+	/etc/init.d/$@
+}
+
 Sysinfo
+alias reload='clear && /etc/profile'
 alias autoupdate='bash /bin/AutoUpdate.sh'
-alias AutoUpdate='bash /bin/AutoUpdate.sh'
-alias Tools='bash /bin/AutoBuild*.sh'
-alias tools='bash /bin/AutoBuild*.sh'
-alias coremarkd='bash /etc/coremark.sh'
+alias tools='bash /bin/AutoBuild_Tools.sh'
+alias run_coremark='bash /etc/coremark.sh'
 alias shutdown='sync && poweroff'
+alias ll='ls -alF --color=auto'
+alias cls='clear'

@@ -31,11 +31,11 @@
 
    **更换源码与分支** 修改`第 30 行 REPO_URL:`为源码仓库地址,`第 31 行`为分支 (可选)
 
-4. 按照需求编辑`Scripts/AutoBuild_DiyScript.sh`文件的 **Firmware-Diy() 函数**
+4. 按照需求编辑并定制`Scripts/AutoBuild_DiyScript.sh`文件
 
-   **注意: 定制固件建议只修改 AutoBuild_DiyScript.sh 文件,而不是修改 AutoBuild_Function.sh**
+   **注意: 为了更方便地同步我的改动,不建议修改 Scripts/AutoBuild_Function.sh 文件**
 
-   **软件包列表** 编辑`CustomPackages`目录下对应**设备名称**的文件,按照现有语法为**特定设备**添加软件包 (可选)
+   **第三方软件包列表** 编辑`CustomPackages`目录下对应**设备名称**的文件,按照现有语法为该设备添加第三方软件包 (可选)
 
 **AutoBuild_DiyScript.sh: Diy_Core() 函数中的变量解释:**
 ```
@@ -81,21 +81,23 @@
 
    **SSH 连接** 使用方法参见 [P3TERX's Blog](https://p3terx.com/archives/build-openwrt-with-github-actions.html)
 
-## 使用固件更新脚本:
+## 使用 AutoUpdate 一键更新脚本:
 
    首先需要打开`TTYD 终端`或者在浏览器输入`IP 地址:7681`,按需输入下方指令:
 
-   检查并更新固件(保留配置),输入: `AutoUpdate`或`bash /bin/AutoUpdate.sh`
+   检查并更新固件(保留配置),输入: `autoupdate`或`bash /bin/AutoUpdate.sh`
 
-   更新固件(不保留配置): `AutoUpdate -n`
+   更新固件(FastGit 镜像加速): `autoupdate -p`
 
-   查看更多使用方法: `AutoUpdate -help`
+   更新固件(不保留配置): `autoupdate -n`或`autoupdate -np`
+
+   查看更多使用方法: `autoUpdate -h`
 
    **注意: 该功能需要在 Diy-Core() 函数中设置`INCLUDE_AutoUpdate`为`true`**
 
-## 使用固件工具箱:
+## 使用 AutoBuild 固件工具箱:
 
-   打开`TTYD 终端`,输入`Tools`或`tools`,请自行摸索,功能持续开发中...
+   打开`TTYD 终端`,输入`tools`或`bash /bin/AutoBuild_Tools.sh`,请自行摸索,功能持续开发中...
 
    **注意: 该功能需要在 Diy-Core() 函数中设置`INCLUDE_AutoBuild_Tools`为`true`**
 

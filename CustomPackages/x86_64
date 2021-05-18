@@ -1,2 +1,2 @@
-git other openwrt-passwall https://github.com/xiaorouji main
-git other luci-app-shutdown https://github.com/Hyy2001X
+git other openwrt-passwall xiaorouji main
+git other luci-app-shutdown Hyy2001X
