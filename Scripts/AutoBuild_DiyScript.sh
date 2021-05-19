@@ -25,6 +25,12 @@ Firmware-Diy() {
 		Replace_File CustomFiles/mac80211.sh package/kernel/mac80211/files/lib/wifi
 		Replace_File CustomFiles/system_d-team_newifi-d2 package/base-files/files/etc/config system
 		# Replace_File CustomFiles/Patches/102-mt7621-fix-cpu-clk-add-clkdev.patch target/linux/ramips/patches-5.4
+	*)
+		case ${Current_Branch} in
+		19.07)
+			AddPackage git kernel rtl8192eu-openwrt https://github.com/teasiu main
+		;;
+		esac	
 	;;
 	esac
 }
