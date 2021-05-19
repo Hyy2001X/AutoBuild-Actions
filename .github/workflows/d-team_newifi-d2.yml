@@ -27,8 +27,8 @@ on:
 #    types: [started]
 
 env:
-  REPO_URL: https://github.com/coolsnowwolf/lede
-  REPO_BRANCH: master
+  REPO_URL: https://github.com/openwrt/openwrt/tree/openwrt-19.07
+  REPO_BRANCH: openwrt-19.07
   CONFIG_FILE: d-team_newifi-d2
   DIY_SCRIPT: Scripts/AutoBuild_DiyScript.sh
   FUNCTION_SCRIPT: Scripts/AutoBuild_Function.sh
