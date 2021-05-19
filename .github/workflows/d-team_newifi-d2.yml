@@ -6,7 +6,7 @@
 # Modify: Hyy2001X
 #=======================================================
 
-name: AutoBuild-d-team_newifi-d2
+name: AutoBuild-d-team_newifi-d2-19.07
 
 on:
   repository_dispatch:
