@@ -27,7 +27,7 @@ on:
 #    types: [started]
 
 env:
-  REPO_URL: https://github.com/openwrt/openwrt/tree/openwrt-19.07
+  REPO_URL: https://github.com/openwrt/openwrt
   REPO_BRANCH: openwrt-19.07
   CONFIG_FILE: d-team_newifi-d2
   DIY_SCRIPT: Scripts/AutoBuild_DiyScript.sh
