@@ -31,6 +31,7 @@ CONFIG_PACKAGE_kmod-usb3=y
 CONFIG_PACKAGE_luci-app-aria2=y
 CONFIG_PACKAGE_luci-app-arpbind=y
 CONFIG_PACKAGE_luci-app-baidupcs-web=y
+CONFIG_PACKAGE_luci-app-cifs-mount=y
 CONFIG_PACKAGE_luci-app-diskman=y
 CONFIG_PACKAGE_luci-app-diskman_INCLUDE_btrfs_progs=y
 CONFIG_PACKAGE_luci-app-diskman_INCLUDE_kmod_md_linear=y
@@ -80,7 +81,6 @@ CONFIG_PACKAGE_luci-app-zerotier=y
 
 CONFIG_PACKAGE_autosamba=y
 CONFIG_PACKAGE_bind-dig=y
-CONFIG_PACKAGE_curl=y
 CONFIG_PACKAGE_cfdisk=y
 CONFIG_PACKAGE_cifsmount=y
 CONFIG_PACKAGE_diffutils=y

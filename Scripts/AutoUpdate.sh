@@ -4,7 +4,7 @@
 # Depends on: bash wget-ssl/wget/uclient-fetch curl x86:gzip openssl
 
 TITLE() {
-	clear && echo "Openwrt-AutoUpdate Script by Hyy2001 ${Version}"
+	clear && echo "Openwrt-AutoUpdate Script by Hyy2001 ${Version} [${DL}]"
 }
 
 SHELL_HELP() {
@@ -23,12 +23,12 @@ SHELL_HELP() {
 	path=<Path>	更新固件 (保存固件到提供的绝对路径 <Path>)
 
 更新脚本:
-	-x		更新 AutoUpdate.sh 脚本
-	-x path=<Path>	更新 AutoUpdate.sh 脚本 (保存脚本到提供的路径 <Path>)
-	-x url=<URL>	更新 AutoUpdate.sh 脚本 (使用提供的地址 <URL> 更新脚本)
+	-x			更新 AutoUpdate.sh 脚本
+	-x path=<Path>		更新 AutoUpdate.sh 脚本 (保存脚本到提供的路径 <Path>)
+	-x url=<URL>		更新 AutoUpdate.sh 脚本 (使用提供的地址 <URL> 更新脚本)
 
 其他参数:
-	-P,--proxy		优先使用镜像加速
+	-P,--proxy		优先开启镜像加速
 	-C <Github URL>		更改 Github 地址为提供的 <Github URL>
 	-B <UEFI | Legacy>	指定 x86_64 设备下载 <UEFI | Legacy> 引导的固件 (危险)
 	-V < | cloud>		打印 <当前 | 云端> AutoUpdate.sh 版本号
@@ -39,6 +39,7 @@ SHELL_HELP() {
 	--bak <Path> <Name>	备份当前系统配置文件到指定的 <Path> 路径及名称 <Name>
 	--clean			清理 AutoUpdate 缓存
 	--check			检查 AutoUpdate 依赖软件包
+	--verbose		打印更详细的下载信息
 	--var <Variable>	打印用户指定的变量 <Variable>
 	--var-rm <Variable>	删除用户指定的变量 <Variable>
 	--env < | 1 | 2>	打印 AutoUpdate 环境变量 <全部 | 变量名称 | 值>
@@ -208,7 +209,7 @@ LOAD_VARIABLE() {
 			}
 		;;
 		*)
-			ECHO r "暂不支持当前固件格式!"
+			ECHO r "[${TARGET_PROFILE}] 设备暂不支持当前固件格式!"
 			EXIT 1
 		;;
 		esac
@@ -279,8 +280,12 @@ CHANGE_BOOT() {
 
 UPDATE_SCRIPT() {
 	[[ $# != 2 ]] && SHELL_HELP
+	ECHO b "脚本下载地址: $2"
 	ECHO b "脚本保存路径: $1"
-	ECHO b "下载地址: $2"
+	[[ -f $1 ]] && {
+		ECHO r "AutoUpdate 脚本保存路径有误,请重新输入!"
+		EXIT 1
+	}
 	ECHO "开始更新 AutoUpdate 脚本,请耐心等待..."
 	[[ ! -d $1 ]] && mkdir -p $1
 	${Downloader} /tmp/AutoUpdate.sh $2
@@ -430,7 +435,10 @@ PREPARE_UPGRADES() {
 		path=/*)
 			[[ -z $(echo $1 | cut -d "=" -f2) ]] && ECHO r "固件保存路径不能为空!" && EXIT 1
 			AutoUpdate_Path=$(echo $1 | cut -d "=" -f2)
-			ECHO g "自定义固件保存路径: ${AutoUpdate_Path}"
+			ECHO g "使用自定义固件保存路径: ${AutoUpdate_Path}"
+		;;
+		--verbose)
+			Special_Commands="${Special_Commands} [打印详细信息]"
 		;;
 		*)
 			SHELL_HELP
@@ -515,7 +523,7 @@ EOF
 		ECHO "正在解压固件,请耐心等待 ..."
 		gzip -d -q -f -c ${AutoUpdate_Path}/${FW_Name} > ${AutoUpdate_Path}/$(echo ${FW_Name} | sed -r 's/(.*).gz/\1/')
 		[[ $? != 0 ]] && {
-			ECHO r "固件解压失败,请检查固件完整性或更换固件保存路径!"
+			ECHO r "固件解压失败,请检查网络稳定性或更换固件保存路径!"
 			EXIT 1
 		} || {
 			FW_Name="$(echo ${FW_Name} | sed -r 's/(.*).gz/\1/')"
@@ -527,13 +535,14 @@ EOF
 		chmod 777 ${AutoUpdate_Path}/${FW_Name}
 		DO_UPGRADE ${Upgrade_Option} ${AutoUpdate_Path}/${FW_Name}
 	} || {
-		ECHO x "[测试模式] 执行: ${Upgrade_Option} ${AutoUpdate_Path}/${FW_Name}"
+		ECHO x "[测试模式] ${Upgrade_Option} ${AutoUpdate_Path}/${FW_Name}"
+		ECHO x "[测试模式] 运行完毕!"
 		EXIT 0
 	}
 }
 
 DO_UPGRADE() {
-	ECHO g "准备更新固件,更新期间请不要断开电源或重启设备 ..."
+	ECHO r "准备更新固件,更新期间请不要断开电源或重启设备 ..."
 	sleep 5
 	ECHO g "正在更新固件,请耐心等待 ..."
 	$*
@@ -566,12 +575,30 @@ AutoUpdate_LOG() {
 		}
 	} || {
 		while [[ $1 ]];do
-			[[ ! $1 =~ path= && $1 != rm && $1 != del ]] && SHELL_HELP
+			case $1 in
+			path=/* | rm | del)
+				:
+			;;
+			*)
+				SHELL_HELP
+			;;
+			esac
 			if [[ $1 =~ path= ]];then
 				LOG_PATH="$(echo $1 | cut -d "=" -f2)"
+				[[ ${LOG_PATH} == ${AutoUpdate_Log_Path} ]] && {
+					ECHO y "AutoUpdate 日志保存路径相同,无需修改!"
+					EXIT 0
+				}
+				[[ -f ${LOG_PATH} ]] && {
+					ECHO r "错误的参数: [${LOG_PATH}]"
+					ECHO r "AutoUpdate 日志保存路径有误,请重新输入!"
+					EXIT 1
+				}
 				EDIT_VARIABLE rm ${Custom_Variable} AutoUpdate_Log_Path
 				EDIT_VARIABLE edit ${Custom_Variable} AutoUpdate_Log_Path ${LOG_PATH}
 				[[ ! -d ${LOG_PATH} ]] && mkdir -p ${LOG_PATH}
+				[[ -f ${AutoUpdate_Log_Path}/AutoUpdate.log ]] && mv ${AutoUpdate_Log_Path}/AutoUpdate.log ${LOG_PATH}
+				AutoUpdate_Log_Path=${LOG_PATH}
 				ECHO y "AutoUpdate 日志保存路径已修改为: ${LOG_PATH}"
 				EXIT 0
 			fi
@@ -590,22 +617,28 @@ AutoUpdate_Main() {
 	[[ ! -d ${AutoUpdate_Path} ]] && mkdir -p ${AutoUpdate_Path}
 	
 	if [[ $(CHECK_PKG wget-ssl) == true ]];then
-		Downloader="wget-ssl -q --no-check-certificate -T 5 --no-dns-cache -x -O"
-	elif [[ $(CHECK_PKG wget) == true ]];then
-		Downloader="wget -q --no-check-certificate -T 5 --no-dns-cache -x -O"
+		Downloader="wget-ssl --quiet --no-check-certificate -T 5 --no-dns-cache -x -O"
+		DL="wget-ssl"
+	elif [[ $(CHECK_PKG curl) == true ]];then
+		Downloader="curl -L -k -m 5 --silent -o"
+		DL="curl"
 	else
-		Downloader="uclient-fetch -q --no-check-certificate -T 5 -O"
+		Downloader="uclient-fetch --quiet --no-check-certificate -T 5 -O"
+		DL="uclient-fetch"
 	fi
 
 	[[ -z $* ]] && PREPARE_UPGRADES $*
 	[[ $1 =~ path= && ! $* =~ -x && ! $* =~ -U ]] && PREPARE_UPGRADES $*
 	[[ $1 =~ --skip ]] && PREPARE_UPGRADES $*
-	[[ $* =~ -T || $* =~ --test ]] && Downloader="$(echo ${Downloader} | sed -r 's/-q /\1/')"
+	[[ $* =~ -T || $* =~ --verbose ]] && {
+		Downloader="$(echo ${Downloader/ --quiet / })"
+		Downloader="$(echo ${Downloader/ --silent / })"
+	}
 
 	while [[ $1 ]];do
 		case "$1" in
-		-n | -f | -u | -T | --test | -P | --proxy | -F)
-			LOGGER "Downloader: ${Downloader}"
+		-n | -f | -u | -T | -P | --proxy | -F | --verbose)
+			LOGGER "Downloader: ${DL} / ${Downloader}"
 			PREPARE_UPGRADES $*
 		;;
 		--bak)
@@ -637,7 +670,7 @@ AutoUpdate_Main() {
 		;;
 		--check)
 		    shift && [[ -n $* ]] && SHELL_HELP
-			CHECK_DEPENDS bash x86:gzip x86:wget-ssl uclient-fetch curl wget openssl
+			CHECK_DEPENDS bash x86:gzip x86:wget-ssl uclient-fetch curl wget openssl which
 		;;
 		--env)
 			shift
@@ -683,12 +716,20 @@ AutoUpdate_Main() {
 			[[ $? == 0 ]] && EXIT 0 || EXIT 1
 		;;
 		-x)
+			shift
 			while [[ $1 ]];do
+				case $1 in
+				url=* | path=/*)
+					:
+				;;
+				*)
+					SHELL_HELP
+				;;
+				esac
 				if [[ $1 =~ url= ]];then
 					[[ $1 =~ url= ]] && {
 					[[ -z $(echo $1 | cut -d "=" -f2) ]] && ECHO r "脚本地址不能为空!" && EXIT 1
 						AutoUpdate_Script_URL="$(echo $1 | cut -d "=" -f2)"
-						ECHO "使用自定义脚本地址: ${AutoUpdate_Script_URL}"
 					}
 				fi
 				[[ $1 =~ path= ]] && {
@@ -767,7 +808,7 @@ AutoUpdate_Main() {
 	done
 }
 
-Version=V6.4.2
+Version=V6.4.4
 AutoUpdate_Path=/tmp/AutoUpdate
 AutoUpdate_Log_Path=/tmp
 AutoUpdate_Script_URL=https://ghproxy.com/https://raw.githubusercontent.com/Hyy2001X/AutoBuild-Actions/master/Scripts/AutoUpdate.sh

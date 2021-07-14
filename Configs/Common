@@ -34,6 +34,7 @@ CONFIG_PACKAGE_6to4=y
 
 # 其他软件包
 CONFIG_PACKAGE_bash=y
+CONFIG_PACKAGE_curl=y
 CONFIG_PACKAGE_htop=y
 CONFIG_PACKAGE_iperf3=y
 CONFIG_PACKAGE_ppp-mod-pppol2tp=y
