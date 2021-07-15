@@ -3,7 +3,7 @@
 # AutoBuild DiyScript
 
 Diy_Core() {
-	Author="Liyue Management Group"
+	Author="Liyue_Management_Group"
 	Short_Firmware_Date=true
 	Default_LAN_IP=false
 
