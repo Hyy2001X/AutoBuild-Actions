@@ -3,7 +3,7 @@
 # AutoBuild DiyScript
 
 Diy_Core() {
-	Author="Guangdong Prospect Information Group"
+	Author="Liyue Management Group"
 	Short_Firmware_Date=true
 	Default_LAN_IP=false
 
