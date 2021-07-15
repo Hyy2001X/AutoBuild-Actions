@@ -1,0 +1,161 @@
+###########################################################
+#   Description: Compile OpenWrt by GitHub Actions        #
+#   Based on: https://github.com/P3TERX/Actions-OpenWrt   #
+#   Author: Hyy2001X                                      #
+###########################################################
+
+name: xiaomi_mi-router-4
+
+### 以下内容请保持不变 (请修改下方: 环境变量设置)
+on:
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      ip_addr:
+        description: '固件 IP 地址 [可选]'
+        default: ''
+### END
+
+  #push:
+  #  branches: 
+  #    - master
+
+  #schedule:
+  #  - cron: 0 8 * * 5
+
+  #watch:
+  #  types: [started]
+
+### 环境变量设置
+env:
+# 编译时调用的 [.config] 文件名称
+  CONFIG_FILE: xiaomi_mi-router-4
+# 源码仓库:分支
+  DEFAULT_SOURCE: coolsnowwolf/lede:master
+# 上传固件到 Github Releases
+  UPLOAD_RELEASES: true
+# 上传固件到 Github Artifacts
+  UPLOAD_ARTIFACTS: false
+# 上传 bin 文件夹到 Github Artifacts
+  UPLOAD_BIN_ARTIFACTS: false
+# 删除无用文件以增加编译空间
+  DELETE_USELESS_FILES: true
+# 删除早期的 workflow 任务
+  DELETE_OLD_WORKFLOW: true
+### END
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@main
+
+    - name: Initialization Define Info
+      run: |
+        CONFIG_FILE=${{ env.CONFIG_FILE }}
+        DEFAULT_SOURCE=${{ env.DEFAULT_SOURCE }}
+        DELETE_USELESS_FILES=${{ env.DELETE_USELESS_FILES }}
+        echo "CONFIG_FILE=$CONFIG_FILE" >> $GITHUB_ENV
+        echo "DELETE_USELESS_FILES=$DELETE_USELESS_FILES" >> $GITHUB_ENV
+        [ ! -f "$GITHUB_WORKSPACE/Configs/$CONFIG_FILE" ] && {
+            echo "Config_File: [/Config/$CONFIG_FILE] is not detected!"
+            exit 1
+        }
+        export REPO_URL="https://github.com/$(echo $DEFAULT_SOURCE | cut -d \: -f 1)"
+        export REPO_BRANCH=$(echo $DEFAULT_SOURCE | cut -d \: -f 2)
+        [ -z $REPO_BRANCH ] && REPO_BRANCH=master
+        echo "REPO_URL=$REPO_URL" >> $GITHUB_ENV
+        echo "REPO_BRANCH=$REPO_BRANCH" >> $GITHUB_ENV
+
+    - name: Initialization Environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo -E apt-get update
+        sudo -E apt-get -y install build-essential cmake asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs git-core gcc-multilib g++-multilib p7zip p7zip-full msmtp libssl-dev texinfo libreadline-dev libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint ccache curl wget vim nano python2.7 python3 python3-pip python3-ply haveged lrzsz device-tree-compiler scons antlr3 gperf intltool mkisofs rsync
+        sudo timedatectl set-timezone "Asia/Shanghai"
+        sudo mkdir -p /workdir
+        sudo chown $USER:$GROUPS /workdir
+        if [ "$DELETE_USELESS_FILES" == true ];then
+            docker rmi $(docker images -q)
+            sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php
+            sudo -E apt-get -y autoremove --purge
+            sudo -E apt-get clean
+        fi
+        echo "Compile_Date=$(date +%Y%m%d%H%M)" > $GITHUB_WORKSPACE/Openwrt.info
+        echo "Display_Date=$(date +%Y/%m/%d)" >> $GITHUB_WORKSPACE/Openwrt.info
+        echo "Before_IP_Address=${{ github.event.inputs.IP }}" >> $GITHUB_WORKSPACE/Openwrt.info
+        echo "Openwrt_Repository=$REPO_URL" >> $GITHUB_WORKSPACE/Openwrt.info
+        echo "Artifacts_Date=$(date +%m%d%H%M)" >> $GITHUB_ENV
+        touch Release_info
+
+    - name: Clone Openwrt Source Code
+      run: |
+        git clone -b $REPO_BRANCH $REPO_URL openwrt
+        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+        cd openwrt
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a > /dev/null 2>&1
+
+    - name: Run AutoBuild_DiyScript.sh
+      run: |
+        chmod +x Scripts/AutoBuild_*.sh
+        cp $GITHUB_WORKSPACE/Configs/$CONFIG_FILE openwrt/.config
+        cd openwrt
+        make defconfig > /dev/null 2>&1
+        source $GITHUB_WORKSPACE/Scripts/AutoBuild_DiyScript.sh
+        source $GITHUB_WORKSPACE/Scripts/AutoBuild_Function.sh
+        Firmware-Diy_Base
+        source $GITHUB_WORKSPACE/openwrt/VARIABLE_FILE_Sec && Firmware-Diy
+        rm -f .config && cp $GITHUB_WORKSPACE/Configs/$CONFIG_FILE .config
+
+    - name: Compile
+      run: |
+        export Compile_Result=false
+        cd openwrt
+        source $GITHUB_WORKSPACE/Scripts/AutoBuild_Function.sh && Other_Scripts
+        rm -rf ./tmp && ./scripts/feeds install -a > /dev/null 2>&1
+        make defconfig
+        make download -j$(nproc)
+        make -j$(nproc) || make -j1 V=s
+        [ $? == 0 ] && Compile_Result=true
+        echo "Compile_Result=$Compile_Result" >> $GITHUB_ENV
+
+    - name: Process Firmware
+      if: env.Compile_Result == 'true' && !cancelled()
+      run: |
+        cd openwrt
+        source $GITHUB_WORKSPACE/Scripts/AutoBuild_Function.sh && PS_Firmware
+
+    - name: Upload Firmware to Artifacts
+      uses: actions/upload-artifact@main
+      if: env.UPLOAD_ARTIFACTS == 'true' && env.Compile_Result == 'true' && !cancelled()
+      with:
+        name: ${{ env.REPO_BRANCH }}_firmware_${{ env.Artifacts_Date }}
+        path: openwrt/bin/Firmware
+
+    - name: Upload bin to Artifacts
+      uses: actions/upload-artifact@main
+      if: env.UPLOAD_BIN_ARTIFACTS == 'true' && env.Compile_Result == 'true' && !cancelled()
+      with:
+        name: ${{ env.REPO_BRANCH }}_bin_${{ env.Artifacts_Date }}
+        path: openwrt/bin
+
+    - name: Upload Firmware to Github Releases
+      uses: softprops/action-gh-release@v1
+      if: env.UPLOAD_RELEASES == 'true' && env.Compile_Result == 'true' && !cancelled()
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: AutoUpdate
+        body_path: Release_info
+        files: openwrt/bin/Firmware/*
+
+    - name: Delete old Workflow Runs
+      uses: GitRML/delete-workflow-runs@main
+      if: env.DELETE_OLD_WORKFLOW == 'true' && !cancelled()
+      with:
+        retain_days: 1
+        keep_minimum_runs: 3
