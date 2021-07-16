@@ -3,8 +3,8 @@
 # AutoBuild DiyScript
 
 Diy_Core() {
-	Author="Liyue_Management_Group"
-	Short_Firmware_Date=true
+	Author="Liyue Guizang Information Technology Co., Ltd."
+	Short_Firmware_Date=false
 	Default_LAN_IP=false
 
 	INCLUDE_AutoBuild_Features=true

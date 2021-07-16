@@ -1,3 +1,2 @@
 git other luci-app-usb3disable rufengsuixing
-git other https://github.com/xiaorouji/openwrt-passwall
 svn package/kernel mt76 openwrt/openwrt/trunk/package/kernel
