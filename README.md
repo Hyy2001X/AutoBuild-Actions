@@ -27,11 +27,13 @@ AutoBuild-Actions 稳定版/模板地址: [AutoBuild-Actions-Template](https://g
 
 1. 进入你的`AutoBuild-Actions`仓库,**下方所有操作都将在你的`AutoBuild-Actions`仓库下进行**
 
-   **提示: 下文中所有的 TARGET_PROFILE 均为你的设备名称,可以在 .config 中找到,例如 d-team_newifi-d2**
+   建议使用 `Github Desktop` 进行操作,修改文件或者同步最新改动都很方便 [[Github Desktop](https://desktop.github.com/)] [[Notepad++](https://notepad-plus-plus.org/downloads/)]
 
-   **本地获取 TARGET_PROFILE 方法:** `egrep -o "CONFIG_TARGET.*DEVICE.*=y" .config | sed -r 's/.*DEVICE_(.*)=y/\1/'`
+   **提示**: 下文中所有的 `TARGET_PROFILE` 均为你的设备名称,可以在`.config`中找到,例如`d-team_newifi-d2`
+
+   本地获取: `egrep -o "CONFIG_TARGET.*DEVICE.*=y" .config | sed -r 's/.*DEVICE_(.*)=y/\1/'`
    
-   **或者:** `grep 'TARGET_PROFILE' .config`,名称中不应含有 `DEVICE_`
+   或者: `grep 'TARGET_PROFILE' .config`,名称中不应含有 `DEVICE_`
 
 2. 把本地的 `.config` 文件**重命名**并上传到仓库的`Configs`目录
 
@@ -39,13 +41,11 @@ AutoBuild-Actions 稳定版/模板地址: [AutoBuild-Actions-Template](https://g
 
 4. 编辑`.github/workflows/*.yml`文件,修改`第 32 行`为上传的 `.config` 文件名称
 
-   **使用其他源码** 修改`第 34 行`为源码的仓库地址:分支
+   **使用其他源码** 修改`第 34 行`为源码的`仓库地址:Branch 或 Tag`,例如 `openwrt:openwrt-21.02`、`openwrt:v19.07.7`
 
 5. 按照需求编辑并定制`Scripts/AutoBuild_DiyScript.sh`文件
 
-   **注意: 为了更方便地同步最新改动,不建议修改 Scripts/AutoBuild_Function.sh 文件**
-
-   **额外的软件包列表** 编辑或自行创建`CustomPackages`目录下要编译的设备对应的 **TARGET_PROFILE** 的文件 (可选)
+   **额外的软件包列表** 编辑或自行创建`CustomPackages`目录下要编译设备名称的`TARGET_PROFILE`文件 (可选)
 
 **AutoBuild_DiyScript.sh: Diy_Core() 函数中的变量解释:**
 ```
@@ -53,11 +53,11 @@ AutoBuild-Actions 稳定版/模板地址: [AutoBuild-Actions-Template](https://g
    
    Short_Firmware_Date 固件日期样式,当设置为 true: [20210601] false: [202106012359]
    
-   Default_LAN_IP 固件 LAN IP 地址,默认为 192.168.1.1
+   Default_LAN_IP 固件默认 LAN IP 地址
 
    INCLUDE_AutoBuild_Features 自动添加 AutoBuild 特性到固件
 
-   INCLUDE_DRM_I915 自动勾选 Intel Graphics 驱动
+   INCLUDE_DRM_I915 自动启用 Intel Graphics i915 驱动
 
    INCLUDE_Argon 自动添加 luci-theme-argon 主题和控制器
 
@@ -67,11 +67,11 @@ AutoBuild-Actions 稳定版/模板地址: [AutoBuild-Actions-Template](https://g
 ```
 **其他指令:** 编辑`Scripts/AutoBuild_DiyScript.sh`,参照下方语法:
 ```
-   [使用 git clone 拉取文件]  AddPackage git 存放位置 软件包名 仓库地址 分支
+   [使用 git clone 拉取文件]  AddPackage git 存放位置 仓库名称 仓库作者 分支
 
-   [使用 svn co 拉取文件]  AddPackage svn 存放位置 软件包名 仓库地址/branches/分支/路径
+   [使用 svn co 拉取文件]  AddPackage svn 存放位置 软件包名 仓库作者/仓库名称/branches/分支名称/路径(可选)
 
-   [复制 /CustomFiles 文件到源码] Copy 文件(夹)名称 目标路径 新名称[可选]
+   [复制 /CustomFiles 文件到源码] Copy 文件(夹)名称 目标路径 新名称(可选)
 ```
 ## 编译固件(STEP 3):
 
