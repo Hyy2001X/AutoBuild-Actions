@@ -5,5 +5,4 @@ git other luci-app-onliner Hyy2001X
 git other luci-app-adguardhome Hyy2001X
 svn other luci-app-eqos kenzok8/openwrt-packages/trunk
 git other OpenClash vernesong master
-git passwall small kenzok8
-git passwall openwrt-passwall xiaorouji
+

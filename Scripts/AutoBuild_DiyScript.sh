@@ -14,6 +14,8 @@ Diy_Core() {
 }
 
 Firmware-Diy() {
+	AddPackage git passwall small kenzok8
+	AddPackage git passwall openwrt-passwall xiaorouji
 	case "${TARGET_PROFILE}" in
 	d-team_newifi-d2)
 		Copy CustomFiles/mac80211.sh package/kernel/mac80211/files/lib/wifi
